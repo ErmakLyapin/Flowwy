@@ -28,13 +28,13 @@ class Payment_typeController {
 
     async Post(req, res, next) {
         try {
-            const { payment_tipe_name } = req.body;
+            const { payment_type_name } = req.body;  // ← исправлено
             
-            if (!payment_tipe_name) {
-                return next(ApiError.badRequest('payment_tipe_name обязателен'));
+            if (!payment_type_name) {
+                return next(ApiError.badRequest('payment_type_name обязателен'));
             }
             
-            const paymentType = await Payment_type.create({ payment_tipe_name });
+            const paymentType = await Payment_type.create({ payment_type_name });  // ← исправлено
             return res.status(201).json(paymentType);
         } catch (error) {
             return next(ApiError.internal('Ошибка при создании типа оплаты'));
@@ -44,7 +44,7 @@ class Payment_typeController {
     async Put(req, res, next) {
         try {
             const { id } = req.params;
-            const { payment_tipe_name } = req.body;
+            const { payment_type_name } = req.body;  // ← исправлено
             
             const paymentType = await Payment_type.findByPk(id);
             
@@ -52,7 +52,7 @@ class Payment_typeController {
                 return next(ApiError.badRequest('Тип оплаты не найден'));
             }
             
-            await paymentType.update({ payment_tipe_name: payment_tipe_name || paymentType.payment_tipe_name });
+            await paymentType.update({ payment_type_name: payment_type_name || paymentType.payment_type_name });  // ← исправлено
             return res.json(paymentType);
         } catch (error) {
             return next(ApiError.internal('Ошибка при обновлении типа оплаты'));

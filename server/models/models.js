@@ -1,33 +1,14 @@
 const sequelize = require('../db');
 const { DataTypes } = require('sequelize');
 
-// ========== ГОРОДА, УЛИЦЫ, ДОМА (справочники) ==========
-const City = sequelize.define('city', {
+// ========== АДМИНИСТРАТОР ==========
+const Administrator = sequelize.define('administrator', {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-    city_name: { type: DataTypes.STRING, allowNull: false }
-});
-
-const Street = sequelize.define('street', {
-    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-    street_name: { type: DataTypes.STRING, allowNull: false }
-});
-
-const House = sequelize.define('house', {
-    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-    house_name: { type: DataTypes.STRING, allowNull: false }
-});
-
-// ========== АДРЕС (составной) ==========
-const Address = sequelize.define('address', {
-    city_id: { type: DataTypes.INTEGER, primaryKey: true },
-    street_id: { type: DataTypes.INTEGER, primaryKey: true },
-    house_id: { type: DataTypes.INTEGER, primaryKey: true }
-});
-
-// ========== УЛИЦЫ В ГОРОДАХ ==========
-const Street_in_city = sequelize.define('street_in_city', {
-    street_id: { type: DataTypes.INTEGER, primaryKey: true },
-    city_id: { type: DataTypes.INTEGER, primaryKey: true }
+    administrator_name: { type: DataTypes.STRING, allowNull: false },
+    administrator_surname: { type: DataTypes.STRING, allowNull: false },
+    administrator_fathername: { type: DataTypes.STRING },
+    administrator_login: { type: DataTypes.STRING, unique: true },
+    password: { type: DataTypes.STRING, allowNull: false },
 });
 
 // ========== ПОСТАВЩИК ==========
@@ -35,9 +16,6 @@ const Supplier = sequelize.define('supplier', {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     supplier_name: { type: DataTypes.STRING, unique: true, allowNull: false },
     supplier_telephone: { type: DataTypes.STRING, unique: true },
-    city_id: { type: DataTypes.INTEGER },
-    street_id: { type: DataTypes.INTEGER },
-    house_id: { type: DataTypes.INTEGER }
 });
 
 // ========== ПОСТАВКА ==========
@@ -53,9 +31,6 @@ const Shop = sequelize.define('shop', {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     shop_name: { type: DataTypes.STRING, allowNull: false },
     shop_telephone: { type: DataTypes.STRING },
-    city_id: { type: DataTypes.INTEGER },
-    street_id: { type: DataTypes.INTEGER },
-    house_id: { type: DataTypes.INTEGER }
 });
 
 // ========== СОТРУДНИК ==========
@@ -64,9 +39,8 @@ const Employee = sequelize.define('employee', {
     employee_name: { type: DataTypes.STRING, allowNull: false },
     employee_surname: { type: DataTypes.STRING, allowNull: false },
     employee_fathername: { type: DataTypes.STRING },
-    employee_telephone: { type: DataTypes.STRING, unique: true },
+    employee_login: { type: DataTypes.STRING, unique: true },
     password: { type: DataTypes.STRING, allowNull: false },
-    role: { type: DataTypes.STRING, defaultValue: 'seller' } // seller или manager
 });
 
 // ========== ТИП ТОВАРА ==========
@@ -144,7 +118,7 @@ const Product_in_order = sequelize.define('product_in_order', {
     order_id: { type: DataTypes.INTEGER, primaryKey: true },
     product_id: { type: DataTypes.INTEGER, primaryKey: true },
     quantity: { type: DataTypes.INTEGER, defaultValue: 1 },
-    price_at_time: { type: DataTypes.DECIMAL(10, 2) } // цена на момент продажи
+    price_at_time: { type: DataTypes.DECIMAL(10, 2) }
 });
 
 // ========== БУКЕТ В ЗАКАЗЕ ==========
@@ -152,12 +126,37 @@ const Bouquet_in_order = sequelize.define('bouquet_in_order', {
     order_id: { type: DataTypes.INTEGER, primaryKey: true },
     bouquet_id: { type: DataTypes.INTEGER, primaryKey: true },
     quantity: { type: DataTypes.INTEGER, defaultValue: 1 },
-    price_at_time: { type: DataTypes.DECIMAL(10, 2) } // цена на момент продажи
+    price_at_time: { type: DataTypes.DECIMAL(10, 2) }
 });
 
-// =================================================================
-// ========== СВЯЗИ (ASSOCIATIONS) ==========
-// =================================================================
+// ===== СВЯЗИ АДМИНИСТРАТОР -> МАГАЗИНЫ (многие ко многим) =====
+const Shop_in_administrator = sequelize.define('shop_in_administrator', {
+    administrator_id: { type: DataTypes.INTEGER, primaryKey: true },
+    shop_id: { type: DataTypes.INTEGER, primaryKey: true },
+});
+
+// ===== СВЯЗИ АДМИНИСТРАТОР -> СОТРУДНИКИ (многие ко многим) =====
+const Employee_in_administrator = sequelize.define('employee_in_administrator', {
+    administrator_id: { type: DataTypes.INTEGER, primaryKey: true },
+    employee_id: { type: DataTypes.INTEGER, primaryKey: true },
+});
+
+// ===== СВЯЗИ СОТРУДНИК -> МАГАЗИН (многие ко многим) =====
+const Employee_in_shop = sequelize.define('employee_in_shop', {
+    employee_id: { type: DataTypes.INTEGER, primaryKey: true },
+    shop_id: { type: DataTypes.INTEGER, primaryKey: true },
+});
+
+// ===== СВЯЗИ ДЛЯ АДМИНИСТРАТОРА =====
+Administrator.belongsToMany(Shop, { through: Shop_in_administrator, foreignKey: 'administrator_id' });
+Shop.belongsToMany(Administrator, { through: Shop_in_administrator, foreignKey: 'shop_id' });
+
+Administrator.belongsToMany(Employee, { through: Employee_in_administrator, foreignKey: 'administrator_id' });
+Employee.belongsToMany(Administrator, { through: Employee_in_administrator, foreignKey: 'employee_id' });
+
+// ===== СВЯЗИ ДЛЯ СОТРУДНИКОВ И МАГАЗИНОВ =====
+Employee.belongsToMany(Shop, { through: Employee_in_shop, foreignKey: 'employee_id' });
+Shop.belongsToMany(Employee, { through: Employee_in_shop, foreignKey: 'shop_id' });
 
 // ===== СВЯЗИ ДЛЯ ПОСТАВОК =====
 Supply.belongsTo(Supplier, { foreignKey: 'supplier_id' });
@@ -218,42 +217,9 @@ Order.hasMany(Bouquet_in_order, { foreignKey: 'order_id' });
 Bouquet_in_order.belongsTo(Bouquet, { foreignKey: 'bouquet_id' });
 Bouquet.hasMany(Bouquet_in_order, { foreignKey: 'bouquet_id' });
 
-// ===== СВЯЗИ ДЛЯ АДРЕСОВ =====
-Address.belongsTo(City, { foreignKey: 'city_id' });
-Address.belongsTo(Street, { foreignKey: 'street_id' });
-Address.belongsTo(House, { foreignKey: 'house_id' });
-
-City.hasMany(Address, { foreignKey: 'city_id' });
-Street.hasMany(Address, { foreignKey: 'street_id' });
-House.hasMany(Address, { foreignKey: 'house_id' });
-
-// ===== СВЯЗИ ДЛЯ УЛИЦ В ГОРОДАХ =====
-Street_in_city.belongsTo(Street, { foreignKey: 'street_id' });
-Street_in_city.belongsTo(City, { foreignKey: 'city_id' });
-
-Street.hasMany(Street_in_city, { foreignKey: 'street_id' });
-City.hasMany(Street_in_city, { foreignKey: 'city_id' });
-
-// ===== СВЯЗИ ПОСТАВЩИКОВ С АДРЕСАМИ =====
-Supplier.belongsTo(City, { foreignKey: 'city_id' });
-Supplier.belongsTo(Street, { foreignKey: 'street_id' });
-Supplier.belongsTo(House, { foreignKey: 'house_id' });
-
-City.hasMany(Supplier, { foreignKey: 'city_id' });
-Street.hasMany(Supplier, { foreignKey: 'street_id' });
-House.hasMany(Supplier, { foreignKey: 'house_id' });
-
-// ===== СВЯЗИ МАГАЗИНОВ С АДРЕСАМИ =====
-Shop.belongsTo(City, { foreignKey: 'city_id' });
-Shop.belongsTo(Street, { foreignKey: 'street_id' });
-Shop.belongsTo(House, { foreignKey: 'house_id' });
-
-City.hasMany(Shop, { foreignKey: 'city_id' });
-Street.hasMany(Shop, { foreignKey: 'street_id' });
-House.hasMany(Shop, { foreignKey: 'house_id' });
-
 // ========== ЭКСПОРТ ==========
 module.exports = {
+    Administrator,
     Supplier,
     Supply,
     Shop,
@@ -269,9 +235,7 @@ module.exports = {
     Product_in_bouquet,
     Product_in_order,
     Bouquet_in_order,
-    Address,
-    City,
-    Street,
-    House,
-    Street_in_city
+    Shop_in_administrator,
+    Employee_in_administrator,
+    Employee_in_shop
 };

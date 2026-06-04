@@ -7,7 +7,7 @@ class ShopController {
             const shops = await Shop.findAll();
             return res.json(shops);
         } catch (error) {
-            return next(ApiError.internal('Ошибка при получении магазинов'));
+            return next(ApiError.internal('Ошибка при получении магазинов: ' + error.message));
         }
     }
 
@@ -22,13 +22,13 @@ class ShopController {
             
             return res.json(shop);
         } catch (error) {
-            return next(ApiError.internal('Ошибка при получении магазина'));
+            return next(ApiError.internal('Ошибка при получении магазина: ' + error.message));
         }
     }
 
     async Post(req, res, next) {
         try {
-            const { shop_name, shop_telephone, city_id, street_id, house_id } = req.body;
+            const { shop_name, shop_telephone } = req.body;
             
             if (!shop_name) {
                 return next(ApiError.badRequest('shop_name обязателен'));
@@ -36,22 +36,19 @@ class ShopController {
             
             const shop = await Shop.create({ 
                 shop_name, 
-                shop_telephone, 
-                city_id, 
-                street_id, 
-                house_id 
+                shop_telephone
             });
             
             return res.status(201).json(shop);
         } catch (error) {
-            return next(ApiError.internal('Ошибка при создании магазина'));
+            return next(ApiError.internal('Ошибка при создании магазина: ' + error.message));
         }
     }
 
     async Put(req, res, next) {
         try {
             const { id } = req.params;
-            const { shop_name, shop_telephone, city_id, street_id, house_id } = req.body;
+            const { shop_name, shop_telephone } = req.body;
             
             const shop = await Shop.findByPk(id);
             
@@ -61,15 +58,12 @@ class ShopController {
             
             await shop.update({
                 shop_name: shop_name || shop.shop_name,
-                shop_telephone: shop_telephone || shop.shop_telephone,
-                city_id: city_id !== undefined ? city_id : shop.city_id,
-                street_id: street_id !== undefined ? street_id : shop.street_id,
-                house_id: house_id !== undefined ? house_id : shop.house_id
+                shop_telephone: shop_telephone !== undefined ? shop_telephone : shop.shop_telephone
             });
             
             return res.json(shop);
         } catch (error) {
-            return next(ApiError.internal('Ошибка при обновлении магазина'));
+            return next(ApiError.internal('Ошибка при обновлении магазина: ' + error.message));
         }
     }
 
@@ -87,7 +81,7 @@ class ShopController {
             
             return res.json({ message: 'Магазин успешно удалён', id: Number(id) });
         } catch (error) {
-            return next(ApiError.internal('Ошибка при удалении магазина'));
+            return next(ApiError.internal('Ошибка при удалении магазина: ' + error.message));
         }
     }
 }

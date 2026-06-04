@@ -55,12 +55,30 @@ class ProductInShopController {
         }
     }
 
-    // GET /api/product_in_shop/:id — получить запись по ID
+    // GET /api/product_in_shop/product/:product_id — все магазины с товаром
+    async GetByProduct(req, res, next) {
+        try {
+            const { product_id } = req.params;
+            const items = await Product_in_shop.findAll({
+                where: { product_id },
+                include: [{ model: Shop }]
+            });
+            return res.json(items);
+        } catch (error) {
+            return next(ApiError.internal('Ошибка при получении магазинов: ' + error.message));
+        }
+    }
+
+    // GET /api/product_in_shop/:product_id/:shop_id — получить одну запись
     async GetId(req, res, next) {
         try {
-            const { id } = req.params;
-            const item = await Product_in_shop.findByPk(id, {
-                include: [{ model: Product }, { model: Shop }]
+            const { product_id, shop_id } = req.params;
+            const item = await Product_in_shop.findOne({
+                where: { product_id, shop_id },
+                include: [
+                    { model: Product },
+                    { model: Shop }
+                ]
             });
             
             if (!item) {
@@ -105,13 +123,16 @@ class ProductInShopController {
         }
     }
 
-    // PUT /api/product_in_shop/:id — обновить количество
+    // PUT /api/product_in_shop/:product_id/:shop_id — обновить количество
     async Put(req, res, next) {
         try {
-            const { id } = req.params;
+            const { product_id, shop_id } = req.params;
             const { quantity } = req.body;
             
-            const item = await Product_in_shop.findByPk(id);
+            const item = await Product_in_shop.findOne({
+                where: { product_id, shop_id }
+            });
+            
             if (!item) {
                 return next(ApiError.badRequest('Запись не найдена'));
             }
@@ -123,12 +144,15 @@ class ProductInShopController {
         }
     }
 
-    // DELETE /api/product_in_shop/:id — удалить товар из магазина
+    // DELETE /api/product_in_shop/:product_id/:shop_id — удалить товар из магазина
     async Delet(req, res, next) {
         try {
-            const { id } = req.params;
+            const { product_id, shop_id } = req.params;
             
-            const item = await Product_in_shop.findByPk(id);
+            const item = await Product_in_shop.findOne({
+                where: { product_id, shop_id }
+            });
+            
             if (!item) {
                 return next(ApiError.badRequest('Запись не найдена'));
             }
