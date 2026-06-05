@@ -1,3 +1,4 @@
+// src/routes.js
 import Admin from './pages/Admin';
 import Main from './pages/Main';
 import Auth from './pages/Auth';

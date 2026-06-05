@@ -1,7 +1,8 @@
+// src/components/AppRouter.js
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { authRoutes, publicRoutes } from '../routes';
-import { LOGIN_ROUTE, MAIN_ROUTE } from '../utils/consts';
+import { MAIN_ROUTE } from '../utils/consts';
 
 const AppRouter = () => {
     const isAuth = false;
