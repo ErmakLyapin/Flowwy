@@ -4,10 +4,20 @@ const { DataTypes } = require('sequelize');
 // ========== АДМИНИСТРАТОР ==========
 const Administrator = sequelize.define('administrator', {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-    administrator_name: { type: DataTypes.STRING, allowNull: false },
-    administrator_surname: { type: DataTypes.STRING, allowNull: false },
+    administrator_name: { type: DataTypes.STRING, allowNull: true },  // ← изменено с false на true
+    administrator_surname: { type: DataTypes.STRING, allowNull: true },  // ← изменено с false на true
     administrator_fathername: { type: DataTypes.STRING },
     administrator_login: { type: DataTypes.STRING, unique: true },
+    password: { type: DataTypes.STRING, allowNull: false },
+});
+
+// ========== СОТРУДНИК ==========
+const Employee = sequelize.define('employee', {
+    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    employee_name: { type: DataTypes.STRING, allowNull: true },  // ← изменено с false на true
+    employee_surname: { type: DataTypes.STRING, allowNull: true },  // ← изменено с false на true
+    employee_fathername: { type: DataTypes.STRING },
+    employee_login: { type: DataTypes.STRING, unique: true },
     password: { type: DataTypes.STRING, allowNull: false },
 });
 
@@ -31,16 +41,6 @@ const Shop = sequelize.define('shop', {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     shop_name: { type: DataTypes.STRING, allowNull: false },
     shop_telephone: { type: DataTypes.STRING },
-});
-
-// ========== СОТРУДНИК ==========
-const Employee = sequelize.define('employee', {
-    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-    employee_name: { type: DataTypes.STRING, allowNull: false },
-    employee_surname: { type: DataTypes.STRING, allowNull: false },
-    employee_fathername: { type: DataTypes.STRING },
-    employee_login: { type: DataTypes.STRING, unique: true },
-    password: { type: DataTypes.STRING, allowNull: false },
 });
 
 // ========== ТИП ТОВАРА ==========
