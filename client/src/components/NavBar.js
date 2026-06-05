@@ -1,11 +1,12 @@
 // client/src/components/NavBar.js
-import React from 'react';
+import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LOGIN_ROUTE, REG_ROUTE } from '../utils/consts';
+import { AuthContext } from '../context/AuthContext';
 
 const NavBar = () => {
     const navigate = useNavigate();
-    const isAuth = localStorage.getItem('token'); // проверяем авторизован ли пользователь
+    const { isAuth, userName, logout } = useContext(AuthContext);
 
     return (
         <nav style={{
@@ -99,14 +100,12 @@ const NavBar = () => {
                             color: '#2e7d32',
                             fontWeight: '500'
                         }}>
-                            {localStorage.getItem('userName') || 'Пользователь'}
+                            {userName || 'Пользователь'}
                         </span>
                         
                         <button
                             onClick={() => {
-                                localStorage.removeItem('token');
-                                localStorage.removeItem('userName');
-                                localStorage.removeItem('role');
+                                logout();
                                 navigate('/');
                             }}
                             style={{

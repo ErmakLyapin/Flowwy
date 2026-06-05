@@ -4,8 +4,11 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { MAIN_ROUTE, LOGIN_ROUTE, REG_ROUTE } from '../utils/consts';
 import NavBar from '../components/NavBar';
 import { registrationAdmin, loginAdmin, loginEmployee } from '../http/userAPI';
+import { useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
 
 const Auth = () => {
+  const { login } = useContext(AuthContext);
     const navigate = useNavigate();
     const location = useLocation();
     
@@ -71,11 +74,9 @@ const Auth = () => {
             });
             
             if (data && data.token) {
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('role', 'admin');
-                localStorage.setItem('userName', data.user.administrator_login);
+                login(data.token, 'admin', data.user.administrator_login);
                 alert('Регистрация успешна!');
-                window.location.href = MAIN_ROUTE;
+                navigate(MAIN_ROUTE);
             }
         } catch (error) {
             console.error('Registration error:', error);
@@ -103,11 +104,8 @@ const Auth = () => {
             const data = await loginAdmin(form.adminLogin, form.adminPassword);
             
             if (data && data.token) {
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('role', 'admin');
-                localStorage.setItem('userName', data.user.administrator_login);
-                alert('Вход выполнен успешно!');
-                window.location.href = MAIN_ROUTE;
+                login(data.token, 'admin', data.user.administrator_login);
+                navigate(MAIN_ROUTE);
             }
         } catch (error) {
             console.error('Login error:', error);
@@ -135,11 +133,8 @@ const Auth = () => {
             const data = await loginEmployee(form.employeeLogin, form.employeePassword);
             
             if (data && data.token) {
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('role', 'employee');
-                localStorage.setItem('userName', data.user.employee_login);
-                alert('Вход выполнен успешно!');
-                window.location.href = MAIN_ROUTE;
+                login(data.token, 'employee', data.user.employee_login);
+                navigate(MAIN_ROUTE);
             }
         } catch (error) {
             console.error('Login error:', error);
