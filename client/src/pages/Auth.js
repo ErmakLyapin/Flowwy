@@ -74,7 +74,7 @@ const Auth = () => {
             });
             
             if (data && data.token) {
-                login(data.token, 'admin', data.user.administrator_login);
+                login(data.token, 'admin', data.user.administrator_login, data.user.id);
                 alert('Регистрация успешна!');
                 navigate(MAIN_ROUTE);
             }
@@ -104,7 +104,7 @@ const Auth = () => {
             const data = await loginAdmin(form.adminLogin, form.adminPassword);
             
             if (data && data.token) {
-                login(data.token, 'admin', data.user.administrator_login);
+                login(data.token, 'admin', data.user.administrator_login, data.user.id);
                 navigate(MAIN_ROUTE);
             }
         } catch (error) {
@@ -133,7 +133,7 @@ const Auth = () => {
             const data = await loginEmployee(form.employeeLogin, form.employeePassword);
             
             if (data && data.token) {
-                login(data.token, 'employee', data.user.employee_login);
+                login(data.token, 'employee', data.user.administrator_login, data.user.id);
                 navigate(MAIN_ROUTE);
             }
         } catch (error) {

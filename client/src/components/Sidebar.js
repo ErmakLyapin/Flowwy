@@ -2,6 +2,7 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { SHOPS_ROUTE } from '../utils/consts';
 
 const Sidebar = () => {
     const navigate = useNavigate();
@@ -10,6 +11,11 @@ const Sidebar = () => {
 
     // Меню для администратора
     const adminMenu = [
+                { 
+            name: 'Магазины', 
+            path: SHOPS_ROUTE,
+            icon: '🏪'
+        },
         { 
             name: '📊 Дашборд', 
             path: '/admin/dashboard',
@@ -19,11 +25,6 @@ const Sidebar = () => {
             name: '👥 Сотрудники', 
             path: '/admin/employees',
             icon: '👥'
-        },
-        { 
-            name: '🏪 Магазины', 
-            path: '/admin/shops',
-            icon: '🏪'
         },
         { 
             name: '📦 Товары', 
@@ -143,6 +144,7 @@ const Sidebar = () => {
                             <div
                                 key={index}
                                 onClick={() => {
+                                    console.log('Navigating to:', item.path);
                                     navigate(item.path);
                                     setIsOpen(false);
                                 }}
@@ -225,7 +227,7 @@ const Sidebar = () => {
                         cursor: 'pointer',
                         zIndex: 1000
                     }}>
-                        🧭 МЕНЮ
+                        МЕНЮ
                     </div>
                 )}
             </div>

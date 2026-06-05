@@ -1,11 +1,12 @@
 // src/components/AppRouter.js
-import React from 'react';
+import React, { useContext } from 'react';  // ← добавить useContext
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { authRoutes, publicRoutes } from '../routes';
 import { MAIN_ROUTE } from '../utils/consts';
+import { AuthContext } from '../context/AuthContext';  // ← добавить импорт
 
 const AppRouter = () => {
-    const isAuth = false;
+    const { isAuth } = useContext(AuthContext);  // ← брать из контекста!
     
     return (
         <Routes>

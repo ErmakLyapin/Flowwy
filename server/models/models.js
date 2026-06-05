@@ -135,17 +135,35 @@ const Shop_in_administrator = sequelize.define('shop_in_administrator', {
     shop_id: { type: DataTypes.INTEGER, primaryKey: true },
 });
 
-// ===== СВЯЗИ АДМИНИСТРАТОР -> СОТРУДНИКИ (многие ко многим) =====
+// ЯВНЫЕ СВЯЗИ
+Shop_in_administrator.belongsTo(Administrator, { foreignKey: 'administrator_id' });
+Administrator.hasMany(Shop_in_administrator, { foreignKey: 'administrator_id' });
+Shop_in_administrator.belongsTo(Shop, { foreignKey: 'shop_id' });
+Shop.hasMany(Shop_in_administrator, { foreignKey: 'shop_id' });
+
+// ===== СВЯЗИ АДМИНИСТРАТОР -> СОТРУДНИКИ =====
 const Employee_in_administrator = sequelize.define('employee_in_administrator', {
     administrator_id: { type: DataTypes.INTEGER, primaryKey: true },
     employee_id: { type: DataTypes.INTEGER, primaryKey: true },
 });
 
-// ===== СВЯЗИ СОТРУДНИК -> МАГАЗИН (многие ко многим) =====
+// ЯВНЫЕ СВЯЗИ
+Employee_in_administrator.belongsTo(Administrator, { foreignKey: 'administrator_id' });
+Administrator.hasMany(Employee_in_administrator, { foreignKey: 'administrator_id' });
+Employee_in_administrator.belongsTo(Employee, { foreignKey: 'employee_id' });
+Employee.hasMany(Employee_in_administrator, { foreignKey: 'employee_id' });
+
+// ===== СВЯЗИ СОТРУДНИК -> МАГАЗИН =====
 const Employee_in_shop = sequelize.define('employee_in_shop', {
     employee_id: { type: DataTypes.INTEGER, primaryKey: true },
     shop_id: { type: DataTypes.INTEGER, primaryKey: true },
 });
+
+// ЯВНЫЕ СВЯЗИ
+Employee_in_shop.belongsTo(Employee, { foreignKey: 'employee_id' });
+Employee.hasMany(Employee_in_shop, { foreignKey: 'employee_id' });
+Employee_in_shop.belongsTo(Shop, { foreignKey: 'shop_id' });
+Shop.hasMany(Employee_in_shop, { foreignKey: 'shop_id' });
 
 // ===== СВЯЗИ ДЛЯ АДМИНИСТРАТОРА =====
 Administrator.belongsToMany(Shop, { through: Shop_in_administrator, foreignKey: 'administrator_id' });

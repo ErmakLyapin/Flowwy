@@ -1,4 +1,4 @@
-const { Shop } = require('../models/models');
+const { Shop, Shop_in_administrator } = require('../models/models');
 const ApiError = require('../error/ApiError');
 
 class ShopController {
@@ -71,8 +71,11 @@ class ShopController {
         try {
             const { id } = req.params;
             
-            const shop = await Shop.findByPk(id);
+            // Сначала удаляем все связи с администраторами
+            await Shop_in_administrator.destroy({ where: { shop_id: id } });
             
+            // Потом удаляем сам магазин
+            const shop = await Shop.findByPk(id);
             if (!shop) {
                 return next(ApiError.badRequest('Магазин не найден'));
             }
