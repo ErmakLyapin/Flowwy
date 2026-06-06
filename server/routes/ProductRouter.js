@@ -1,11 +1,12 @@
 const Router = require('express')
 const router = new Router()
 const ProductController = require('../controllers/ProductController')
+const authMiddleware = require('../middleware/authMiddleware')  // ← добавить
 
-router.post('/', ProductController.Post)
-router.get('/', ProductController.Get)
-router.get('/:id', ProductController.GetId)
-router.put('/:id', ProductController.Put)
-router.delete('/:id', ProductController.Delet)
+router.post('/', authMiddleware, ProductController.Post)
+router.get('/', authMiddleware, ProductController.Get)
+router.get('/:id', authMiddleware, ProductController.GetId)
+router.put('/:id', authMiddleware, ProductController.Put)
+router.delete('/:id', authMiddleware, ProductController.Delet)
 
 module.exports = router

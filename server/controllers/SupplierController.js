@@ -4,7 +4,10 @@ const ApiError = require('../error/ApiError');
 class SupplierController {
     async Get(req, res, next) {
         try {
-            const suppliers = await Supplier.findAll();
+            const administrator_id = req.user.id;
+            const suppliers = await Supplier.findAll({
+                where: { administrator_id }
+            });
             return res.json(suppliers);
         } catch (error) {
             return next(ApiError.internal('Ошибка при получении поставщиков: ' + error.message));
@@ -14,7 +17,10 @@ class SupplierController {
     async GetId(req, res, next) {
         try {
             const { id } = req.params;
-            const supplier = await Supplier.findByPk(id);
+            const administrator_id = req.user.id;
+            const supplier = await Supplier.findOne({
+                where: { id, administrator_id }
+            });
             
             if (!supplier) {
                 return next(ApiError.badRequest('Поставщик не найден'));
@@ -29,6 +35,7 @@ class SupplierController {
     async Post(req, res, next) {
         try {
             const { supplier_name, supplier_telephone } = req.body;
+            const administrator_id = req.user.id;
             
             if (!supplier_name) {
                 return next(ApiError.badRequest('supplier_name обязателен'));
@@ -36,7 +43,8 @@ class SupplierController {
             
             const supplier = await Supplier.create({ 
                 supplier_name, 
-                supplier_telephone
+                supplier_telephone,
+                administrator_id
             });
             
             return res.status(201).json(supplier);
@@ -49,8 +57,11 @@ class SupplierController {
         try {
             const { id } = req.params;
             const { supplier_name, supplier_telephone } = req.body;
+            const administrator_id = req.user.id;
             
-            const supplier = await Supplier.findByPk(id);
+            const supplier = await Supplier.findOne({
+                where: { id, administrator_id }
+            });
             
             if (!supplier) {
                 return next(ApiError.badRequest('Поставщик не найден'));
@@ -70,8 +81,11 @@ class SupplierController {
     async Delet(req, res, next) {
         try {
             const { id } = req.params;
+            const administrator_id = req.user.id;
             
-            const supplier = await Supplier.findByPk(id);
+            const supplier = await Supplier.findOne({
+                where: { id, administrator_id }
+            });
             
             if (!supplier) {
                 return next(ApiError.badRequest('Поставщик не найден'));

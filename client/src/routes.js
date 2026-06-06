@@ -4,7 +4,9 @@ import Main from './pages/Main';
 import Auth from './pages/Auth';
 import Shops from './pages/Shops';
 import Employees from './pages/Employees';  // ← добавить
-import { ADMIN_ROUTE, MAIN_ROUTE, LOGIN_ROUTE, REG_ROUTE, SHOPS_ROUTE, EMPLOYEES_ROUTE } from './utils/consts';
+import Supplies from './pages/Supplies';           // ← добавить
+import CreateSupply from './pages/CreateSupply';   // ← добавить
+import { ADMIN_ROUTE, MAIN_ROUTE, LOGIN_ROUTE, REG_ROUTE, SHOPS_ROUTE, EMPLOYEES_ROUTE, SUPPLIES_ROUTE, CREATE_SUPPLIES_ROUTE } from './utils/consts';
 
 export const authRoutes = [
     {
@@ -18,6 +20,14 @@ export const authRoutes = [
     {
         path: EMPLOYEES_ROUTE,
         Component: Employees
+    },
+        {
+        path: SUPPLIES_ROUTE,
+        Component: Supplies
+    },
+    {
+        path: CREATE_SUPPLIES_ROUTE,
+        Component: CreateSupply
     }
 ];
 

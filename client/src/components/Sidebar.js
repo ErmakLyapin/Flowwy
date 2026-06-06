@@ -2,7 +2,7 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { EMPLOYEES_ROUTE, SHOPS_ROUTE } from '../utils/consts';
+import { EMPLOYEES_ROUTE, SHOPS_ROUTE, SUPPLIES_ROUTE } from '../utils/consts';
 
 const Sidebar = () => {
     const navigate = useNavigate();
@@ -22,6 +22,11 @@ const Sidebar = () => {
             icon: '👥'
         },
         { 
+            name: 'Поставки', 
+            path: SUPPLIES_ROUTE,
+            icon: '🚚'
+        },
+        { 
             name: '📊 Дашборд', 
             path: '/admin/dashboard',
             icon: '📊'
@@ -35,11 +40,6 @@ const Sidebar = () => {
             name: '💐 Букеты', 
             path: '/admin/bouquets',
             icon: '💐'
-        },
-        { 
-            name: '🚚 Поставки', 
-            path: '/admin/supplies',
-            icon: '🚚'
         },
         { 
             name: '📋 Заказы', 

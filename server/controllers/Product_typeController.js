@@ -4,17 +4,23 @@ const ApiError = require('../error/ApiError');
 class Product_typeController {
     async Get(req, res, next) {
         try {
-            const productTypes = await Product_type.findAll();
+            const administrator_id = req.user.id;
+            const productTypes = await Product_type.findAll({
+                where: { administrator_id }
+            });
             return res.json(productTypes);
         } catch (error) {
-            return next(ApiError.internal('Ошибка при получении типов товаров'));
+            return next(ApiError.internal('Ошибка при получении типов товаров: ' + error.message));
         }
     }
 
     async GetId(req, res, next) {
         try {
             const { id } = req.params;
-            const productType = await Product_type.findByPk(id);
+            const administrator_id = req.user.id;
+            const productType = await Product_type.findOne({
+                where: { id, administrator_id }
+            });
             
             if (!productType) {
                 return next(ApiError.badRequest('Тип товара не найден'));
@@ -22,19 +28,23 @@ class Product_typeController {
             
             return res.json(productType);
         } catch (error) {
-            return next(ApiError.internal('Ошибка при получении типа товара'));
+            return next(ApiError.internal('Ошибка при получении типа товара: ' + error.message));
         }
     }
 
     async Post(req, res, next) {
         try {
             const { product_type_name } = req.body;
+            const administrator_id = req.user.id;
             
             if (!product_type_name) {
                 return next(ApiError.badRequest('product_type_name обязателен'));
             }
             
-            const productType = await Product_type.create({ product_type_name });
+            const productType = await Product_type.create({ 
+                product_type_name,
+                administrator_id
+            });
             return res.status(201).json(productType);
         } catch (error) {
             return next(ApiError.internal('Ошибка при создании типа товара: ' + error.message));
@@ -44,9 +54,12 @@ class Product_typeController {
     async Put(req, res, next) {
         try {
             const { id } = req.params;
-            const { product_type_name } = req.body;  // ← ИСПРАВЛЕНО
+            const { product_type_name } = req.body;
+            const administrator_id = req.user.id;
             
-            const productType = await Product_type.findByPk(id);
+            const productType = await Product_type.findOne({
+                where: { id, administrator_id }
+            });
             
             if (!productType) {
                 return next(ApiError.badRequest('Тип товара не найден'));
@@ -65,7 +78,11 @@ class Product_typeController {
     async Delet(req, res, next) {
         try {
             const { id } = req.params;
-            const productType = await Product_type.findByPk(id);
+            const administrator_id = req.user.id;
+            
+            const productType = await Product_type.findOne({
+                where: { id, administrator_id }
+            });
             
             if (!productType) {
                 return next(ApiError.badRequest('Тип товара не найден'));

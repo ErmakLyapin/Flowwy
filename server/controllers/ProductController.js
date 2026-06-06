@@ -6,22 +6,52 @@ const fs = require('fs');
 
 class ProductController {
     async Get(req, res, next) {
-        try {
-            let {product_type_id, limit, page } = req.query;
+    try {
+        const administrator_id = req.user.id;
+        let { product_type_id, limit, page } = req.query;
+        
+        // Если есть параметры пагинации - возвращаем с count
+        if (limit && page) {
             page = page || 1;
             limit = limit || 10;
             let offset = page * limit - limit;
-            let products = await Product.findAndCountAll({ where: { product_type_id }, limit, offset })
-            return res.json(products);
-        } catch (error) {
-            return next(ApiError.internal('Ошибка при получении товаров'));
+            
+            let whereClause = { administrator_id };
+            if (product_type_id) {
+                whereClause.product_type_id = product_type_id;
+            }
+            
+            let products = await Product.findAndCountAll({ 
+                where: whereClause, 
+                limit, 
+                offset 
+            });
+            return res.json(products); // { count, rows }
         }
+        
+        // Без пагинации - возвращаем массив
+        let whereClause = { administrator_id };
+        if (product_type_id) {
+            whereClause.product_type_id = product_type_id;
+        }
+        
+        const products = await Product.findAll({
+            where: whereClause
+        });
+        
+        return res.json(products); // массив
+    } catch (error) {
+        return next(ApiError.internal('Ошибка при получении товаров: ' + error.message));
     }
+}
 
     async GetId(req, res, next) {
         try {
             const { id } = req.params;
-            const product = await Product.findByPk(id);
+            const administrator_id = req.user.id;
+            const product = await Product.findOne({
+                where: { id, administrator_id }
+            });
             
             if (!product) {
                 return next(ApiError.badRequest('Товар не найден'));
@@ -29,13 +59,14 @@ class ProductController {
             
             return res.json(product);
         } catch (error) {
-            return next(ApiError.internal('Ошибка при получении товара'));
+            return next(ApiError.internal('Ошибка при получении товара: ' + error.message));
         }
     }
 
     async Post(req, res, next) {
         try {
             const { product_name, product_type_id, retail_price } = req.body;
+            const administrator_id = req.user.id;
             
             if (!product_name) {
                 return next(ApiError.badRequest('product_name обязателен'));
@@ -61,7 +92,8 @@ class ProductController {
                 product_name, 
                 product_type_id, 
                 retail_price, 
-                product_picture: filename
+                product_picture: filename,
+                administrator_id
             });
             
             return res.status(201).json(product);
@@ -74,8 +106,11 @@ class ProductController {
         try {
             const { id } = req.params;
             const { product_name, product_type_id, retail_price } = req.body;
+            const administrator_id = req.user.id;
             
-            const product = await Product.findByPk(id);
+            const product = await Product.findOne({
+                where: { id, administrator_id }
+            });
             
             if (!product) {
                 return next(ApiError.badRequest('Товар не найден'));
@@ -121,8 +156,11 @@ class ProductController {
     async Delet(req, res, next) {
         try {
             const { id } = req.params;
+            const administrator_id = req.user.id;
             
-            const product = await Product.findByPk(id);
+            const product = await Product.findOne({
+                where: { id, administrator_id }
+            });
             
             if (!product) {
                 return next(ApiError.badRequest('Товар не найден'));

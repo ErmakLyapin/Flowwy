@@ -18,7 +18,7 @@ const Employee = sequelize.define('employee', {
     employee_surname: { type: DataTypes.STRING, allowNull: true },  // ← изменено с false на true
     employee_fathername: { type: DataTypes.STRING },
     employee_login: { type: DataTypes.STRING, unique: true },
-    password: { type: DataTypes.STRING, allowNull: false },
+    password: { type: DataTypes.STRING, allowNull: false }
 });
 
 // ========== ПОСТАВЩИК ==========
@@ -26,6 +26,7 @@ const Supplier = sequelize.define('supplier', {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     supplier_name: { type: DataTypes.STRING, unique: true, allowNull: false },
     supplier_telephone: { type: DataTypes.STRING, unique: true },
+    administrator_id: { type: DataTypes.INTEGER, allowNull: false }
 });
 
 // ========== ПОСТАВКА ==========
@@ -33,20 +34,21 @@ const Supply = sequelize.define('supply', {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     supplier_id: { type: DataTypes.INTEGER, allowNull: false },
     supply_date: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
-    employee_id: { type: DataTypes.INTEGER, allowNull: false }
+    administrator_id: { type: DataTypes.INTEGER, allowNull: false }
 });
 
 // ========== МАГАЗИН ==========
 const Shop = sequelize.define('shop', {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     shop_name: { type: DataTypes.STRING, allowNull: false },
-    shop_telephone: { type: DataTypes.STRING },
+    shop_telephone: { type: DataTypes.STRING }
 });
 
 // ========== ТИП ТОВАРА ==========
 const Product_type = sequelize.define('product_type', {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-    product_type_name: { type: DataTypes.STRING, allowNull: false }
+    product_type_name: { type: DataTypes.STRING, allowNull: false },
+    administrator_id: { type: DataTypes.INTEGER, allowNull: false }
 });
 
 // ========== ТОВАР ==========
@@ -55,7 +57,8 @@ const Product = sequelize.define('product', {
     product_name: { type: DataTypes.STRING, allowNull: false },
     product_type_id: { type: DataTypes.INTEGER, allowNull: false },
     retail_price: { type: DataTypes.DECIMAL(10, 2) },
-    product_picture: { type: DataTypes.STRING }
+    product_picture: { type: DataTypes.STRING },
+    administrator_id: { type: DataTypes.INTEGER, allowNull: false }
 });
 
 // ========== ТОВАР В НАКЛАДНОЙ (поставка) ==========
@@ -77,13 +80,15 @@ const Product_in_shop = sequelize.define('product_in_shop', {
 const Customer = sequelize.define('customer', {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     customer_name: { type: DataTypes.STRING },
-    customer_telephone: { type: DataTypes.STRING, unique: true, allowNull: false }
+    customer_telephone: { type: DataTypes.STRING, unique: true, allowNull: false },
+    administrator_id: { type: DataTypes.INTEGER, allowNull: false }
 });
 
 // ========== ТИП ОПЛАТЫ ==========
 const Payment_type = sequelize.define('payment_type', {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-    payment_type_name: { type: DataTypes.STRING, allowNull: false }
+    payment_type_name: { type: DataTypes.STRING, allowNull: false },
+    administrator_id: { type: DataTypes.INTEGER, allowNull: false }
 });
 
 // ========== ЗАКАЗ ==========
@@ -234,6 +239,29 @@ Order.hasMany(Bouquet_in_order, { foreignKey: 'order_id' });
 
 Bouquet_in_order.belongsTo(Bouquet, { foreignKey: 'bouquet_id' });
 Bouquet.hasMany(Bouquet_in_order, { foreignKey: 'bouquet_id' });
+
+// ===== СВЯЗИ ДЛЯ ПОСТАВЩИКА (Supplier) =====
+Supplier.belongsTo(Administrator, { foreignKey: 'administrator_id' });
+Administrator.hasMany(Supplier, { foreignKey: 'administrator_id' });
+
+// ===== СВЯЗИ ДЛЯ ТИПА ТОВАРА (Product_type) =====
+Product_type.belongsTo(Administrator, { foreignKey: 'administrator_id' });
+Administrator.hasMany(Product_type, { foreignKey: 'administrator_id' });
+
+// ===== СВЯЗИ ДЛЯ ТОВАРА (Product) =====
+Product.belongsTo(Administrator, { foreignKey: 'administrator_id' });
+Administrator.hasMany(Product, { foreignKey: 'administrator_id' });
+
+// ===== СВЯЗИ ДЛЯ КЛИЕНТА (Customer) =====
+Customer.belongsTo(Administrator, { foreignKey: 'administrator_id' });
+Administrator.hasMany(Customer, { foreignKey: 'administrator_id' });
+
+// ===== СВЯЗИ ДЛЯ ТИПА ОПЛАТЫ (Payment_type) =====
+Payment_type.belongsTo(Administrator, { foreignKey: 'administrator_id' });
+Administrator.hasMany(Payment_type, { foreignKey: 'administrator_id' });
+
+Supply.belongsTo(Administrator, { foreignKey: 'administrator_id' });
+Administrator.hasMany(Supply, { foreignKey: 'administrator_id' });
 
 // ========== ЭКСПОРТ ==========
 module.exports = {

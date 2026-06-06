@@ -1,11 +1,12 @@
 const Router = require('express')
 const router = new Router()
-const SupplyController = require('../controllers/SupplyContrioller')
+const SupplyController = require('../controllers/SupplyController')
+const authMiddleware = require('../middleware/authMiddleware')  // ← добавить
 
-router.post('/', SupplyController.Post)
-router.get('/', SupplyController.Get)
-router.get('/:id', SupplyController.GetId)
-router.put('/:id', SupplyController.Put)
-router.delete('/:id', SupplyController.Delet)
+router.post('/', authMiddleware, SupplyController.Post)  // ← добавить authMiddleware
+router.get('/', authMiddleware, SupplyController.Get)    // ← добавить authMiddleware
+router.get('/:id', authMiddleware, SupplyController.GetId)
+router.put('/:id', authMiddleware, SupplyController.Put)
+router.delete('/:id', authMiddleware, SupplyController.Delet)
 
 module.exports = router
