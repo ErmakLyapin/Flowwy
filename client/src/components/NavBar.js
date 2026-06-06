@@ -6,7 +6,8 @@ import { AuthContext } from '../context/AuthContext';
 
 const NavBar = () => {
     const navigate = useNavigate();
-    const { isAuth, userName, logout } = useContext(AuthContext);
+    const { isAuth, userName, logout, userRole } = useContext(AuthContext);  // ← добавить userRole
+    const selectedShopName = localStorage.getItem('selectedShopName');
 
     return (
         <nav style={{
@@ -17,7 +18,7 @@ const NavBar = () => {
             backgroundColor: 'white',
             boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
         }}>
-            {/* Левая часть - название (кликабельное) */}
+            {/* Левая часть - название */}
             <div 
                 onClick={() => navigate('/')}
                 style={{
@@ -34,13 +35,14 @@ const NavBar = () => {
                 FLOWWY
             </div>
 
-            {/* Правая часть - кнопки */}
+            {/* Правая часть */}
             <div style={{
                 display: 'flex',
-                gap: '15px'
+                gap: '15px',
+                alignItems: 'center'
             }}>
                 {!isAuth ? (
-                    // Не авторизован - показываем кнопки входа и регистрации
+                    // Не авторизован
                     <>
                         <button
                             onClick={() => navigate(LOGIN_ROUTE)}
@@ -93,18 +95,37 @@ const NavBar = () => {
                         </button>
                     </>
                 ) : (
-                    // Авторизован - показываем имя пользователя и кнопку выхода
+                    // Авторизован
                     <>
+                        {/* Для сотрудника показываем выбранный магазин */}
+                        {userRole === 'employee' && selectedShopName && (
+                            <span style={{
+                                padding: '8px 16px',
+                                backgroundColor: '#e8f5e9',
+                                color: '#2e7d32',
+                                borderRadius: '20px',
+                                fontSize: '14px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '5px'
+                            }}>
+                                {selectedShopName}
+                            </span>
+                        )}
+                        
                         <span style={{
                             padding: '10px 20px',
                             color: '#2e7d32',
                             fontWeight: '500'
                         }}>
-                            {userName || 'Пользователь'}
+                            {userName}
                         </span>
                         
                         <button
                             onClick={() => {
+                                // При выходе очищаем выбранный магазин
+                                localStorage.removeItem('selectedShopId');
+                                localStorage.removeItem('selectedShopName');
                                 logout();
                                 navigate('/');
                             }}

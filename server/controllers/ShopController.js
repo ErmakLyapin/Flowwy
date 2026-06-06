@@ -1,4 +1,4 @@
-const { Shop, Shop_in_administrator } = require('../models/models');
+const { Shop, Shop_in_administrator, Employee_in_shop } = require('../models/models');
 const ApiError = require('../error/ApiError');
 
 class ShopController {
@@ -68,25 +68,39 @@ class ShopController {
     }
 
     async Delet(req, res, next) {
-        try {
-            const { id } = req.params;
-            
-            // Сначала удаляем все связи с администраторами
-            await Shop_in_administrator.destroy({ where: { shop_id: id } });
-            
-            // Потом удаляем сам магазин
-            const shop = await Shop.findByPk(id);
-            if (!shop) {
-                return next(ApiError.badRequest('Магазин не найден'));
-            }
-            
-            await shop.destroy();
-            
-            return res.json({ message: 'Магазин успешно удалён', id: Number(id) });
-        } catch (error) {
-            return next(ApiError.internal('Ошибка при удалении магазина: ' + error.message));
+    try {
+        const { id } = req.params;
+        
+        console.log('=== DELETE SHOP ===');
+        console.log('Shop ID:', id);
+        
+        // 1. Удаляем связи с администраторами
+        console.log('Deleting from shop_in_administrators...');
+        await Shop_in_administrator.destroy({ where: { shop_id: id } });
+        console.log('Done');
+        
+        // 2. Удаляем связи с сотрудниками
+        console.log('Deleting from employee_in_shops...');
+        await Employee_in_shop.destroy({ where: { shop_id: id } });
+        console.log('Done');
+        
+        // 3. Находим и удаляем магазин
+        console.log('Finding shop...');
+        const shop = await Shop.findByPk(id);
+        if (!shop) {
+            return next(ApiError.badRequest('Магазин не найден'));
         }
+        
+        console.log('Deleting shop...');
+        await shop.destroy();
+        console.log('Shop deleted successfully!');
+        
+        return res.json({ message: 'Магазин успешно удалён', id: Number(id) });
+    } catch (error) {
+        console.error('ERROR in delete:', error);
+        return next(ApiError.internal('Ошибка при удалении магазина: ' + error.message));
     }
+}
 }
 
 module.exports = new ShopController();

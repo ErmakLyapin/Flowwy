@@ -133,7 +133,7 @@ const Auth = () => {
             const data = await loginEmployee(form.employeeLogin, form.employeePassword);
             
             if (data && data.token) {
-                login(data.token, 'employee', data.user.administrator_login, data.user.id);
+                login(data.token, 'employee', data.user.employee_login, data.user.id);
                 navigate(MAIN_ROUTE);
             }
         } catch (error) {
