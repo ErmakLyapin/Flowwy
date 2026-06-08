@@ -8,7 +8,7 @@ export const getAdminShops = async () => {
         console.error('Admin ID not found');
         return [];
     }
-    const { data } = await $authHost.get(`shop_in_administrator/administrator/${adminId}`);  // ← подчеркивание
+    const { data } = await $authHost.get(`shop_in_administrator/administrator/${adminId}`);
     return data;
 };
 

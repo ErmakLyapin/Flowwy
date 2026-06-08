@@ -2,7 +2,7 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { EMPLOYEES_ROUTE, SHOPS_ROUTE, SUPPLIES_ROUTE } from '../utils/consts';
+import { ADMIN_PROD, BOUQUETS_ROUTE, EMPLOYEE_PRODUCTS, EMPLOYEES_ROUTE, SHOPS_ROUTE, SUPPLIES_ROUTE } from '../utils/consts';
 
 const Sidebar = () => {
     const navigate = useNavigate();
@@ -25,6 +25,11 @@ const Sidebar = () => {
             name: 'Поставки', 
             path: SUPPLIES_ROUTE,
             icon: '🚚'
+        },
+        { 
+            name: '📦 Товары в магазинах', 
+            path: ADMIN_PROD,
+            icon: '📦'
         },
         { 
             name: '📊 Дашборд', 
@@ -61,10 +66,11 @@ const Sidebar = () => {
             icon: '📋'
         },
         { 
-            name: '💐 Букеты', 
-            path: '/employee/bouquets',
+            name: 'Букеты', 
+            path: BOUQUETS_ROUTE,
             icon: '💐'
         },
+ // В employeeMenu добавьте:
         { 
             name: '📦 Товары', 
             path: '/employee/products',
@@ -72,7 +78,7 @@ const Sidebar = () => {
         },
         { 
             name: '🏪 Мой магазин', 
-            path: '/employee/my-shop',
+            path: EMPLOYEE_PRODUCTS,
             icon: '🏪'
         },
         { 

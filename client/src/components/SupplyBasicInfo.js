@@ -3,6 +3,7 @@ import React from 'react';
 
 const SupplyBasicInfo = ({ 
     suppliers, 
+    shops,  // ← добавить shops
     selectedSupplierId, 
     onSupplierChange, 
     onOpenSupplierModal,
@@ -37,8 +38,7 @@ const SupplyBasicInfo = ({
         padding: '10px 20px',
         borderRadius: '8px',
         cursor: 'pointer',
-        fontSize: '16px',
-        marginRight: '10px'
+        fontSize: '16px'
     };
 
     return (
@@ -51,6 +51,7 @@ const SupplyBasicInfo = ({
         }}>
             <h3 style={{ marginBottom: '20px' }}>Основная информация</h3>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px' }}>
+                {/* Поставщик */}
                 <div>
                     <label style={{ fontWeight: '500' }}>Поставщик *</label>
                     <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
@@ -58,13 +59,12 @@ const SupplyBasicInfo = ({
                             value={selectedSupplierId}
                             onChange={(e) => onSupplierChange(e.target.value)}
                             style={{ ...selectStyle, flex: 1 }}
-                            disabled={isDisabled}
                             required
                         >
                             <option value="">-- Выберите поставщика --</option>
                             {suppliers.map(supplier => (
                                 <option key={supplier.id} value={supplier.id}>
-                                    {supplier.supplier_name} {supplier.supplier_telephone ? `(${supplier.supplier_telephone})` : ''}
+                                    {supplier.supplier_name}
                                 </option>
                             ))}
                         </select>
@@ -81,18 +81,26 @@ const SupplyBasicInfo = ({
                         </button>
                     </div>
                 </div>
+
+                {/* Магазин */}
                 <div>
-                    <label style={{ fontWeight: '500' }}>Магазин</label>
+                    <label style={{ fontWeight: '500' }}>Магазин *</label>
                     <select
                         value={selectedShopId}
                         onChange={(e) => onShopChange(e.target.value)}
                         style={selectStyle}
-                        disabled={true}
+                        required
                     >
-                        <option value="">-- Выберите магазин (скоро) --</option>
+                        <option value="">-- Выберите магазин --</option>
+                        {shops && shops.map(shop => (  // ← добавить проверку shops
+                            <option key={shop.id} value={shop.id}>
+                                {shop.shop_name}
+                            </option>
+                        ))}
                     </select>
-                    <small style={{ color: '#999' }}>Функция в разработке</small>
                 </div>
+
+                {/* Дата поставки */}
                 <div>
                     <label style={{ fontWeight: '500' }}>Дата поставки</label>
                     <input
@@ -100,7 +108,6 @@ const SupplyBasicInfo = ({
                         value={supplyDate}
                         onChange={(e) => onDateChange(e.target.value)}
                         style={inputStyle}
-                        disabled={isDisabled}
                     />
                 </div>
             </div>

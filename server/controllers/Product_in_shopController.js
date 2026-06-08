@@ -163,6 +163,34 @@ class ProductInShopController {
             return next(ApiError.internal('Ошибка при удалении: ' + error.message));
         }
     }
+
+async WriteOff(req, res, next) {
+    try {
+        const { product_id, shop_id } = req.params;
+        const { quantity } = req.body;
+        
+        if (!quantity || quantity <= 0) {
+            return next(ApiError.badRequest('Количество должно быть больше 0'));
+        }
+        
+        const item = await Product_in_shop.findOne({
+            where: { product_id, shop_id }
+        });
+        
+        if (!item) {
+            return next(ApiError.badRequest('Товар не найден в магазине'));
+        }
+        
+        if (item.quantity < quantity) {
+            return next(ApiError.badRequest('Недостаточно товара для списания'));
+        }
+        
+        await item.update({ quantity: item.quantity - quantity });
+        return res.json({ message: 'Товар списан', quantity: item.quantity - quantity });
+    } catch (error) {
+        return next(ApiError.internal('Ошибка при списании товара: ' + error.message));
+    }
 }
 
+}
 module.exports = new ProductInShopController();

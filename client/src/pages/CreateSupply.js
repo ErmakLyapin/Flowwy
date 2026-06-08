@@ -7,6 +7,8 @@ import AddProductForm from '../components/AddProductForm';
 import ProductsTable from '../components/ProductsTable';
 import CreateSupplierModal from '../components/CreateSupplierModal';
 import CreateProductModal from '../components/CreateProductModal';  // ← добавить
+import { addProductToShop } from '../http/productAPI';
+import { getAdminShops } from '../http/shopAPI';
 import { 
     createSupply, 
     getAdminSuppliers, 
@@ -41,10 +43,12 @@ const CreateSupply = () => {
     const [wholesalePrice, setWholesalePrice] = useState('');
     const [quantity, setQuantity] = useState(1);
     const [productList, setProductList] = useState([]);
+    const [shops, setShops] = useState([]);
 
     useEffect(() => {
         loadSuppliers();
         loadProducts();
+        loadShops();
         loadProductTypes();  // ← добавить
     }, []);
 
@@ -154,45 +158,71 @@ const CreateSupply = () => {
     setQuantity(1);
 };
 
+    const loadShops = async () => {
+    try {
+        const data = await getAdminShops();
+        const shopList = data.map(item => item.shop || item);
+        setShops(shopList);
+    } catch (error) {
+        console.error('Ошибка загрузки магазинов:', error);
+        setShops([]);
+    }
+};
     const handleSubmit = async (e) => {
-        e.preventDefault();
+    e.preventDefault();
+    
+    if (!selectedSupplierId) {
+        alert('Выберите поставщика');
+        return;
+    }
+
+    if (!selectedShopId) {
+        alert('Выберите магазин');
+        return;
+    }
+
+    if (productList.length === 0) {
+        alert('Добавьте хотя бы один товар');
+        return;
+    }
+    
+    setLoading(true);
+    
+    try {
+        // 1. Создаем накладную (добавили shop_id)
+        const supply = await createSupply({
+            supplier_id: selectedSupplierId,
+            supply_date: supplyDate,
+            shop_id: selectedShopId  // ← добавить shop_id
+        });
         
-        if (!selectedSupplierId) {
-            alert('Выберите поставщика');
-            return;
-        }
-        
-        if (productList.length === 0) {
-            alert('Добавьте хотя бы один товар');
-            return;
-        }
-        
-        setLoading(true);
-        
-        try {
-            const supply = await createSupply({
-                supplier_id: selectedSupplierId,
-                supply_date: supplyDate
-            });
+        // 2. Добавляем все товары
+        for (const product of productList) {
+            // Добавляем в product_in_invoice (история поставки)
+            await addProductToSupply(
+                product.product_id,
+                supply.id,
+                product.wholesale_price,
+                product.quantity
+            );
             
-            for (const product of productList) {
-                await addProductToSupply(
-                    product.product_id,
-                    supply.id,
-                    product.wholesale_price,
-                    product.quantity
-                );
-            }
-            
-            alert(`Накладная №${supply.id} успешно создана!`);
-            navigate('/admin/supplies');
-        } catch (error) {
-            console.error('Ошибка создания накладной:', error);
-            alert(error.response?.data?.message || 'Ошибка создания накладной');
-        } finally {
-            setLoading(false);
+            // Добавляем в product_in_shop (остатки в магазине)
+            await addProductToShop(  // ← добавить эту функцию
+                product.product_id,
+                selectedShopId,
+                product.quantity
+            );
         }
-    };
+        
+        alert(`Накладная №${supply.id} успешно создана! Товары добавлены в магазин.`);
+        navigate('/admin/supplies');
+    } catch (error) {
+        console.error('Ошибка создания накладной:', error);
+        alert(error.response?.data?.message || 'Ошибка создания накладной');
+    } finally {
+        setLoading(false);
+    }
+};
 
     const buttonStyle = {
         backgroundColor: '#2e7d32',
@@ -226,6 +256,7 @@ const CreateSupply = () => {
                 <form onSubmit={handleSubmit}>
                     <SupplyBasicInfo
                         suppliers={suppliers}
+                        shops={shops}  // ← добавить
                         selectedSupplierId={selectedSupplierId}
                         onSupplierChange={setSelectedSupplierId}
                         onOpenSupplierModal={() => setShowNewSupplierModal(true)}

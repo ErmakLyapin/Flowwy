@@ -6,7 +6,11 @@ import Shops from './pages/Shops';
 import Employees from './pages/Employees';  // ← добавить
 import Supplies from './pages/Supplies';           // ← добавить
 import CreateSupply from './pages/CreateSupply';   // ← добавить
-import { ADMIN_ROUTE, MAIN_ROUTE, LOGIN_ROUTE, REG_ROUTE, SHOPS_ROUTE, EMPLOYEES_ROUTE, SUPPLIES_ROUTE, CREATE_SUPPLIES_ROUTE } from './utils/consts';
+import AdminProducts from './pages/AdminProducts';
+import EmployeeProducts from './pages/EmployeeProducts';
+import Bouquets from './pages/Bouquets';
+import CreateBouquet from './pages/CreateBouquet';
+import { BOUQUETS_ROUTE, CREATE_BOUQUET_ROUTE, ADMIN_ROUTE, MAIN_ROUTE, LOGIN_ROUTE, REG_ROUTE, SHOPS_ROUTE, EMPLOYEES_ROUTE, SUPPLIES_ROUTE, CREATE_SUPPLIES_ROUTE, ADMIN_PROD, EMPLOYEE_PRODUCTS } from './utils/consts';
 
 export const authRoutes = [
     {
@@ -28,6 +32,22 @@ export const authRoutes = [
     {
         path: CREATE_SUPPLIES_ROUTE,
         Component: CreateSupply
+    },
+    {
+        path: ADMIN_PROD,
+        Component: AdminProducts
+    },  
+    {
+        path: EMPLOYEE_PRODUCTS, 
+        Component: EmployeeProducts
+    },
+        {
+        path: BOUQUETS_ROUTE,
+        Component: Bouquets
+    },
+    {
+        path: CREATE_BOUQUET_ROUTE,
+        Component: CreateBouquet
     }
 ];
 

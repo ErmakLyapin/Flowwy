@@ -6,17 +6,26 @@ const fs = require('fs');
 
 class BouquetController {
     async Get(req, res, next) {
-        try {
-            let {limit, page} = req.query
-            page = page || 1
-            limit = limit || 10
-            let offset = page * limit - limit
-            let bouquets = await Bouquet.findAndCountAll({limit, offset});
-            return res.json(bouquets);
-        } catch (error) {
-            return next(ApiError.internal('Ошибка при получении букетов'));
+    try {
+        // Если нужна пагинация
+        let { limit, page } = req.query;
+        if (limit && page) {
+            page = page || 1;
+            limit = limit || 10;
+            let offset = page * limit - limit;
+            let bouquets = await Bouquet.findAndCountAll({ limit, offset });
+            return res.json(bouquets); // { count, rows }
         }
+        
+        // Без пагинации - возвращаем массив
+        let bouquets = await Bouquet.findAll({
+            order: [['createdAt', 'DESC']]
+        });
+        return res.json(bouquets);
+    } catch (error) {
+        return next(ApiError.internal('Ошибка при получении букетов: ' + error.message));
     }
+}
 
     async GetId(req, res, next) {
         try {
