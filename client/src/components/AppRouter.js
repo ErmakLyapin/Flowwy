@@ -1,7 +1,7 @@
 // src/components/AppRouter.js
 import React, { useContext, useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { authRoutes, publicRoutes } from '../routes';
+import { adminRoutes, employeeRoutes, publicRoutes } from '../routes';  // ← исправлено
 import { MAIN_ROUTE } from '../utils/consts';
 import { AuthContext } from '../context/AuthContext';
 import EmployeeShopSelect from './EmployeeShopSelect';
@@ -9,14 +9,11 @@ import EmployeeShopSelect from './EmployeeShopSelect';
 const AppRouter = () => {
     const { isAuth, userRole } = useContext(AuthContext);
     const [needShopSelect, setNeedShopSelect] = useState(false);
-    const [selectedShop, setSelectedShop] = useState(null);
 
     useEffect(() => {
-        // Проверяем, нужно ли выбрать магазин для сотрудника
         const selectedShopId = localStorage.getItem('selectedShopId');
-        const role = localStorage.getItem('role');
         
-        if (isAuth && role === 'employee' && !selectedShopId) {
+        if (isAuth && userRole === 'employee' && !selectedShopId) {
             setNeedShopSelect(true);
         } else {
             setNeedShopSelect(false);
@@ -24,21 +21,28 @@ const AppRouter = () => {
     }, [isAuth, userRole]);
 
     const handleShopSelect = (shop) => {
-        setSelectedShop(shop);
-        setNeedShopSelect(false);
-    };
-
-    const handleSkipSelect = () => {
+        localStorage.setItem('selectedShopId', shop.id);
+        localStorage.setItem('selectedShopName', shop.shop_name);
         setNeedShopSelect(false);
     };
 
     if (needShopSelect) {
-        return <EmployeeShopSelect onSelect={handleShopSelect} onSkip={handleSkipSelect} />;
+        return <EmployeeShopSelect onSelect={handleShopSelect} />;
     }
+    
+    // Выбираем роуты в зависимости от роли
+    const getRoutes = () => {
+        if (userRole === 'admin') {
+            return adminRoutes;
+        } else if (userRole === 'employee') {
+            return employeeRoutes;
+        }
+        return [];
+    };
     
     return (
         <Routes>
-            {isAuth && authRoutes.map(({path, Component}) => (
+            {isAuth && getRoutes().map(({path, Component}) => (
                 <Route key={path} path={path} element={<Component />} />
             ))}
             {publicRoutes.map(({path, Component}) => (

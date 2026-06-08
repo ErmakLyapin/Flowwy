@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { getEmployeeShops } from '../http/employeeAPI';
 
-const EmployeeShopSelect = ({ onSelect, onSkip }) => {
+const EmployeeShopSelect = ({ onSelect }) => {  // ← убрали onSkip
     const [shops, setShops] = useState([]);
     const [selectedShop, setSelectedShop] = useState('');
     const [loading, setLoading] = useState(true);
@@ -28,12 +28,10 @@ const EmployeeShopSelect = ({ onSelect, onSkip }) => {
         if (selectedShop) {
             const shop = shops.find(s => s.id === parseInt(selectedShop));
             if (shop) {
-                localStorage.setItem('selectedShopId', shop.id);
-                localStorage.setItem('selectedShopName', shop.shop_name);
                 onSelect(shop);
             }
         } else {
-            onSkip();
+            alert('Пожалуйста, выберите магазин!');
         }
     };
 
@@ -76,17 +74,6 @@ const EmployeeShopSelect = ({ onSelect, onSkip }) => {
         padding: '12px 24px',
         borderRadius: '8px',
         cursor: 'pointer',
-        fontSize: '16px',
-        marginRight: '10px'
-    };
-
-    const skipButtonStyle = {
-        backgroundColor: '#6c757d',
-        color: 'white',
-        border: 'none',
-        padding: '12px 24px',
-        borderRadius: '8px',
-        cursor: 'pointer',
         fontSize: '16px'
     };
 
@@ -100,17 +87,33 @@ const EmployeeShopSelect = ({ onSelect, onSkip }) => {
         );
     }
 
+    // Если нет магазинов, показываем сообщение
+    if (shops.length === 0) {
+        return (
+            <div style={modalStyle}>
+                <div style={contentStyle}>
+                    <h2 style={{ color: '#333', marginBottom: '10px' }}>
+                        🏪 Нет доступных магазинов
+                    </h2>
+                    <p style={{ color: '#666', marginBottom: '20px' }}>
+                        У вас нет привязанных магазинов. Обратитесь к администратору.
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div style={modalStyle}>
             <div style={contentStyle}>
                 <h2 style={{ color: '#333', marginBottom: '10px' }}>
-                    Выберите магазин
+                    🏪 Выберите магазин
                 </h2>
                 <p style={{ color: '#666', marginBottom: '20px' }}>
                     Выберите магазин, в котором будете работать
                 </p>
 
-               <select
+                <select
                     value={selectedShop}
                     onChange={(e) => setSelectedShop(e.target.value)}
                     style={selectStyle}
@@ -123,22 +126,9 @@ const EmployeeShopSelect = ({ onSelect, onSkip }) => {
                     ))}
                 </select>
 
-                <div>
-                    <button onClick={handleSubmit} style={buttonStyle}>
-                        Подтвердить
-                    </button>
-                    {shops.length === 0 && (
-                        <button onClick={onSkip} style={skipButtonStyle}>
-                            Пропустить
-                        </button>
-                    )}
-                </div>
-
-                {shops.length === 0 && (
-                    <p style={{ color: '#999', fontSize: '12px', marginTop: '15px' }}>
-                        У вас нет привязанных магазинов. Обратитесь к администратору.
-                    </p>
-                )}
+                <button onClick={handleSubmit} style={buttonStyle}>
+                    Подтвердить
+                </button>
             </div>
         </div>
     );

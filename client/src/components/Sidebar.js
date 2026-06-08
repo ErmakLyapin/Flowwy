@@ -2,7 +2,15 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { ADMIN_PROD, BOUQUETS_ROUTE, EMPLOYEE_PRODUCTS, EMPLOYEES_ROUTE, SHOPS_ROUTE, SUPPLIES_ROUTE } from '../utils/consts';
+import { 
+    ADMIN_PROD, 
+    BOUQUETS_ROUTE, 
+    EMPLOYEE_PROD, 
+    EMPLOYEES_ROUTE, 
+    SHOPS_ROUTE, 
+    SUPPLIES_ROUTE,
+    CREATE_BOUQUET_ROUTE
+} from '../utils/consts';
 
 const Sidebar = () => {
     const navigate = useNavigate();
@@ -11,12 +19,12 @@ const Sidebar = () => {
 
     // Меню для администратора
     const adminMenu = [
-                { 
+        { 
             name: 'Магазины', 
             path: SHOPS_ROUTE,
             icon: '🏪'
         },
-                { 
+        { 
             name: 'Сотрудники', 
             path: EMPLOYEES_ROUTE,
             icon: '👥'
@@ -27,32 +35,22 @@ const Sidebar = () => {
             icon: '🚚'
         },
         { 
-            name: '📦 Товары в магазинах', 
+            name: 'Товары в магазинах', 
             path: ADMIN_PROD,
             icon: '📦'
         },
         { 
-            name: '📊 Дашборд', 
+            name: 'Дашборд', 
             path: '/admin/dashboard',
             icon: '📊'
         },
         { 
-            name: '📦 Товары', 
-            path: '/admin/products',
-            icon: '📦'
-        },
-        { 
-            name: '💐 Букеты', 
-            path: '/admin/bouquets',
-            icon: '💐'
-        },
-        { 
-            name: '📋 Заказы', 
+            name: 'Заказы', 
             path: '/admin/orders',
             icon: '📋'
         },
         { 
-            name: '📊 Отчеты', 
+            name: 'Отчеты', 
             path: '/admin/reports',
             icon: '📊'
         }
@@ -61,7 +59,7 @@ const Sidebar = () => {
     // Меню для сотрудника
     const employeeMenu = [
         { 
-            name: '📋 Заказы', 
+            name: 'Заказы', 
             path: '/employee/orders',
             icon: '📋'
         },
@@ -70,19 +68,23 @@ const Sidebar = () => {
             path: BOUQUETS_ROUTE,
             icon: '💐'
         },
- // В employeeMenu добавьте:
         { 
-            name: '📦 Товары', 
-            path: '/employee/products',
+            name: 'Создать букет', 
+            path: CREATE_BOUQUET_ROUTE,
+            icon: '✨'
+        },
+        { 
+            name: 'Товары', 
+            path: EMPLOYEE_PROD,
             icon: '📦'
         },
         { 
-            name: '🏪 Мой магазин', 
-            path: EMPLOYEE_PRODUCTS,
+            name: 'Мой магазин', 
+            path: '/employee/my-shop',
             icon: '🏪'
         },
         { 
-            name: '📊 Продажи', 
+            name: 'Продажи', 
             path: '/employee/sales',
             icon: '📊'
         }
@@ -189,7 +191,7 @@ const Sidebar = () => {
                     }}>
                         <div
                             onClick={() => {
-                                logout();  // ← используем logout из контекста
+                                logout();
                                 navigate('/login');
                                 setIsOpen(false);
                             }}

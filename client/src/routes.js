@@ -3,16 +3,29 @@ import Admin from './pages/Admin';
 import Main from './pages/Main';
 import Auth from './pages/Auth';
 import Shops from './pages/Shops';
-import Employees from './pages/Employees';  // ← добавить
-import Supplies from './pages/Supplies';           // ← добавить
-import CreateSupply from './pages/CreateSupply';   // ← добавить
-import AdminProducts from './pages/AdminProducts';
-import EmployeeProducts from './pages/EmployeeProducts';
+import Employees from './pages/Employees';
+import Supplies from './pages/Supplies';
+import CreateSupply from './pages/CreateSupply';
+import Products from './pages/Products';  // ← единая страница
 import Bouquets from './pages/Bouquets';
 import CreateBouquet from './pages/CreateBouquet';
-import { BOUQUETS_ROUTE, CREATE_BOUQUET_ROUTE, ADMIN_ROUTE, MAIN_ROUTE, LOGIN_ROUTE, REG_ROUTE, SHOPS_ROUTE, EMPLOYEES_ROUTE, SUPPLIES_ROUTE, CREATE_SUPPLIES_ROUTE, ADMIN_PROD, EMPLOYEE_PRODUCTS } from './utils/consts';
+import { 
+    ADMIN_ROUTE, 
+    MAIN_ROUTE, 
+    LOGIN_ROUTE, 
+    REG_ROUTE, 
+    SHOPS_ROUTE, 
+    EMPLOYEES_ROUTE, 
+    SUPPLIES_ROUTE, 
+    CREATE_SUPPLIES_ROUTE, 
+    ADMIN_PROD, 
+    EMPLOYEE_PROD,
+    BOUQUETS_ROUTE,
+    CREATE_BOUQUET_ROUTE
+} from './utils/consts';
 
-export const authRoutes = [
+// Роуты только для администратора
+export const adminRoutes = [
     {
         path: ADMIN_ROUTE,
         Component: Admin
@@ -25,7 +38,7 @@ export const authRoutes = [
         path: EMPLOYEES_ROUTE,
         Component: Employees
     },
-        {
+    {
         path: SUPPLIES_ROUTE,
         Component: Supplies
     },
@@ -35,13 +48,17 @@ export const authRoutes = [
     },
     {
         path: ADMIN_PROD,
-        Component: AdminProducts
-    },  
+        Component: () => <Products userRole="admin" />  // ← передаём роль
+    }
+];
+
+// Роуты только для сотрудника
+export const employeeRoutes = [
     {
-        path: EMPLOYEE_PRODUCTS, 
-        Component: EmployeeProducts
+        path: EMPLOYEE_PROD,
+        Component: () => <Products userRole="employee" />  // ← передаём роль
     },
-        {
+    {
         path: BOUQUETS_ROUTE,
         Component: Bouquets
     },
@@ -51,6 +68,7 @@ export const authRoutes = [
     }
 ];
 
+// Публичные роуты
 export const publicRoutes = [
     {
         path: MAIN_ROUTE,
