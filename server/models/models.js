@@ -283,5 +283,6 @@ module.exports = {
     Bouquet_in_order,
     Shop_in_administrator,
     Employee_in_administrator,
-    Employee_in_shop
+    Employee_in_shop, 
+    sequelize
 };

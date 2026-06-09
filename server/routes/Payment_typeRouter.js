@@ -1,11 +1,12 @@
 const Router = require('express')
 const router = new Router()
-const Payment_typeController = require('../controllers/Payment_typeController')
+const PaymentTypeController = require('../controllers/Payment_typeController')
+const authMiddleware = require('../middleware/authMiddleware')
 
-router.post('/', Payment_typeController.Post)
-router.get('/', Payment_typeController.Get)
-router.get('/:id', Payment_typeController.GetId)
-router.put('/:id', Payment_typeController.Put)
-router.delete('/:id', Payment_typeController.Delet)
+router.get('/', authMiddleware, PaymentTypeController.Get)
+router.get('/:id', authMiddleware, PaymentTypeController.GetId)
+router.post('/', authMiddleware, PaymentTypeController.Post)
+router.put('/:id', authMiddleware, PaymentTypeController.Put)
+router.delete('/:id', authMiddleware, PaymentTypeController.Delet)
 
 module.exports = router

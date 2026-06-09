@@ -9,6 +9,8 @@ import CreateSupply from './pages/CreateSupply';
 import Products from './pages/Products';  // ← единая страница
 import Bouquets from './pages/Bouquets';
 import CreateBouquet from './pages/CreateBouquet';
+import CreateOrder from './pages/CreateOrder';
+import Orders from './pages/Orders';
 import { 
     ADMIN_ROUTE, 
     MAIN_ROUTE, 
@@ -21,7 +23,9 @@ import {
     ADMIN_PROD, 
     EMPLOYEE_PROD,
     BOUQUETS_ROUTE,
-    CREATE_BOUQUET_ROUTE
+    CREATE_BOUQUET_ROUTE,
+    CREATE_ORDER,
+    EMP_ORDERS
 } from './utils/consts';
 
 // Роуты только для администратора
@@ -65,6 +69,14 @@ export const employeeRoutes = [
     {
         path: CREATE_BOUQUET_ROUTE,
         Component: CreateBouquet
+    },
+        {
+        path: CREATE_ORDER,
+        Component: CreateOrder
+    },
+    {
+        path: EMP_ORDERS,
+        Component: Orders
     }
 ];
 

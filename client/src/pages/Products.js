@@ -1,6 +1,6 @@
 // src/pages/Products.js
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import CategoryButtons from '../components/CategoryButtons';
 import ProductTable from '../components/ProductTable';
@@ -11,7 +11,12 @@ import { writeOffProduct } from '../http/productAPI';
 
 const Products = ({ userRole }) => {
     const navigate = useNavigate();
+    const location = useLocation();
     const isAdmin = userRole === 'admin';
+    
+    // Режим выбора для заказа
+    const [selectMode, setSelectMode] = useState(false);
+    const [returnPath, setReturnPath] = useState('/');
     
     const [shops, setShops] = useState([]);
     const [selectedShopId, setSelectedShopId] = useState('');
@@ -31,20 +36,33 @@ const Products = ({ userRole }) => {
         availableTypeIds
     } = useProducts(effectiveShopId);
     
-    const [showWriteOffModal, setShowWriteOffModal] = useState(false);
-    const [selectedProduct, setSelectedProduct] = useState(null);
-    const [writeOffQuantity, setWriteOffQuantity] = useState(1);
+   const [showWriteOffModal, setShowWriteOffModal] = useState(false);
+const [selectedProduct, setSelectedProduct] = useState(null);
+const [writeOffQuantity, setWriteOffQuantity] = useState(1);
 
-    React.useEffect(() => {
-        if (isAdmin) {
-            loadShops();
-        } else if (!effectiveShopId) {
-            alert('Магазин не выбран. Обратитесь к администратору.');
-            navigate('/');
-        } else {
-            setShopName(selectedShopName || '');
-        }
-    }, []);
+// ===== 1. СНАЧАЛА - проверка режима выбора =====
+useEffect(() => {
+    if (location.state?.selectMode) {
+        setSelectMode(true);
+        setReturnPath(location.state.returnTo || '/employee/create-order');
+    } else {
+        setSelectMode(false);
+    }
+}, [location.state]);
+
+// ===== 2. ПОТОМ - загрузка магазинов (только для админа) =====
+useEffect(() => {
+    if (isAdmin) {
+        loadShops();
+    } else if (!effectiveShopId) {
+        alert('Магазин не выбран. Обратитесь к администратору.');
+        navigate('/');
+    } else {
+        setShopName(selectedShopName || '');
+    }
+}, [isAdmin, effectiveShopId]);
+
+// ===== 3. НЕ ДОБАВЛЯЙТЕ ЛИШНИХ useEffect =====
 
     const loadShops = async () => {
         try {
@@ -59,6 +77,30 @@ const Products = ({ userRole }) => {
             alert('Ошибка загрузки магазинов');
         }
     };
+
+    // Обработчик выбора товара/букета для заказа
+    const handleSelectItem = (item, isBouquet = false) => {
+    console.log('Select mode:', selectMode);
+    console.log('Item selected:', item);
+    
+    if (selectMode) {
+        // Для букета нужно извлечь числовой ID из строки "bouquet_1"
+        let id = item.product_id;
+        if (isBouquet && typeof id === 'string' && id.startsWith('bouquet_')) {
+            id = parseInt(id.split('_')[1]);
+        }
+        
+        const selectedItem = {
+            id: id,
+            name: item.product_name,
+            price: item.retail_price,
+            quantity: 1,
+            type: isBouquet ? 'bouquet' : 'product'
+        };
+        console.log('Sending to order:', selectedItem);
+        navigate(returnPath, { state: { selectedItem } });
+    }
+};
 
     const handleWriteOff = (product) => {
         setSelectedProduct(product);
@@ -110,6 +152,68 @@ const Products = ({ userRole }) => {
     const currentProducts = getCurrentProducts();
     const isBouquetView = showBouquets;
 
+    // Модифицируем таблицу для режима выбора
+    const renderProductTable = () => {
+        if (selectMode) {
+            // В режиме выбора показываем кнопку "Выбрать" вместо "Списать"
+            return (
+                <div style={{
+                    backgroundColor: 'white',
+                    padding: '20px',
+                    borderRadius: '12px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                }}>
+                    <h3 style={{ marginBottom: '20px' }}>
+                        {isBouquetView ? '💐 Выберите букет' : `Выберите ${getTypeName(selectedTypeId)}`}
+                    </h3>
+                    <table style={{
+                        width: '100%',
+                        borderCollapse: 'collapse',
+                        backgroundColor: 'white',
+                        borderRadius: '12px',
+                        overflow: 'hidden'
+                    }}>
+                        <thead>
+                            <tr>
+                                <th style={{ backgroundColor: '#2e7d32', color: 'white', padding: '12px', textAlign: 'left' }}>ID</th>
+                                <th style={{ backgroundColor: '#2e7d32', color: 'white', padding: '12px', textAlign: 'left' }}>Название</th>
+                                <th style={{ backgroundColor: '#2e7d32', color: 'white', padding: '12px', textAlign: 'left' }}>Цена</th>
+                                <th style={{ backgroundColor: '#2e7d32', color: 'white', padding: '12px', textAlign: 'left' }}>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {currentProducts.map(product => (
+                                <tr key={product.product_id}>
+                                    <td style={{ padding: '12px', borderBottom: '1px solid #eee' }}>{product.product_id}</td>
+                                    <td style={{ padding: '12px', borderBottom: '1px solid #eee' }}>{product.product_name}</td>
+                                    <td style={{ padding: '12px', borderBottom: '1px solid #eee' }}>{product.retail_price} ₽</td>
+                                    <td style={{ padding: '12px', borderBottom: '1px solid #eee' }}>
+                                        <button
+                                            onClick={() => handleSelectItem(product, isBouquetView)}
+                                            style={buttonStyle}
+                                        >
+                                            Выбрать
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            );
+        }
+        
+        // Обычный режим (просмотр/списание)
+        return (
+            <ProductTable
+                products={currentProducts}
+                isAdmin={isAdmin}
+                onWriteOff={handleWriteOff}
+                title={isBouquetView ? '💐 Букеты' : getTypeName(selectedTypeId)}
+            />
+        );
+    };
+
     return (
         <div style={{ minHeight: '100vh', background: '#f5f7fa' }}>
             <NavBar />
@@ -121,17 +225,26 @@ const Products = ({ userRole }) => {
                     marginBottom: '30px'
                 }}>
                     <h1 style={{ color: '#333' }}>
-                        {isAdmin ? '📦 Товары в магазинах' : '📦 Товары в магазине'}
+                        {selectMode 
+                            ? '🛒 Выберите товар для заказа' 
+                            : (isAdmin ? '📦 Товары в магазинах' : '📦 Товары в магазине')
+                        }
                     </h1>
                     <button
-                        onClick={() => navigate(isAdmin ? '/admin' : '/')}
-                        style={buttonStyle}
+                        onClick={() => {
+                            if (selectMode) {
+                                navigate(returnPath);
+                            } else {
+                                navigate(isAdmin ? '/admin' : '/');
+                            }
+                        }}
+                        style={{ ...buttonStyle, backgroundColor: '#6c757d' }}
                     >
-                        ← Назад
+                        {selectMode ? '← Отмена' : '← Назад'}
                     </button>
                 </div>
 
-                {isAdmin && (
+                {isAdmin && !selectMode && (
                     <div style={{
                         backgroundColor: 'white',
                         padding: '20px',
@@ -155,7 +268,7 @@ const Products = ({ userRole }) => {
                     </div>
                 )}
 
-                {!isAdmin && effectiveShopId && (
+                {!isAdmin && effectiveShopId && !selectMode && (
                     <div style={{
                         backgroundColor: 'white',
                         padding: '20px',
@@ -184,12 +297,7 @@ const Products = ({ userRole }) => {
                             loading={loading}
                         />
 
-                        <ProductTable
-                            products={currentProducts}
-                            isAdmin={isAdmin}
-                            onWriteOff={handleWriteOff}
-                            title={isBouquetView ? '💐 Букеты' : getTypeName(selectedTypeId)}
-                        />
+                        {renderProductTable()}
 
                         {currentProducts.length === 0 && !loading && isBouquetView && (
                             <div style={{

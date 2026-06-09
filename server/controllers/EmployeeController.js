@@ -3,17 +3,17 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { Employee, Employee_in_administrator, Employee_in_shop } = require('../models/models');
 
-// Генерация JWT токена с ролью
-const generateJWT = (id, employee_login, role) => {
+// Генерация JWT токена с ролью и shopId
+const generateJWT = (id, employee_login, role, shopId = null) => {
     return jwt.sign(
-        { id, login: employee_login, role },
+        { id, login: employee_login, role, shopId },
         process.env.SECRET_KEY,
         { expiresIn: '24h' }
     );
 };
 
 class EmployeeController {
-    // Регистрация
+    // Регистрация (не используется для сотрудников, только для админа)
     async reg(req, res, next) {
         try {
             const { employee_name, employee_surname, employee_fathername, employee_login, password, role } = req.body;
@@ -37,7 +37,11 @@ class EmployeeController {
                 role: role || 'seller'
             });
             
-            const token = generateJWT(user.id, user.employee_login, user.role);
+            // Получаем shopId сотрудника (если есть)
+            const employeeShop = await Employee_in_shop.findOne({ where: { employee_id: user.id } });
+            const shopId = employeeShop?.shop_id || null;
+            
+            const token = generateJWT(user.id, user.employee_login, user.role, shopId);
             return res.json({ token, user });
         } catch (error) {
             return next(ApiError.internal('Ошибка при регистрации: ' + error.message));
@@ -59,7 +63,11 @@ class EmployeeController {
                 return next(ApiError.internal("Неверный пароль!"));
             }
             
-            const token = generateJWT(user.id, user.employee_login, user.role);
+            // Получаем shopId сотрудника (если есть)
+            const employeeShop = await Employee_in_shop.findOne({ where: { employee_id: user.id } });
+            const shopId = employeeShop?.shop_id || null;
+            
+            const token = generateJWT(user.id, user.employee_login, user.role, shopId);
             return res.json({ token, user });
         } catch (error) {
             return next(ApiError.internal('Ошибка при входе: ' + error.message));
@@ -69,7 +77,8 @@ class EmployeeController {
     // Проверка токена (авторизация)
     async check(req, res, next) {
         try {
-            const token = generateJWT(req.user.id, req.user.login, req.user.role);
+            const { id, login, role, shopId } = req.user;
+            const token = generateJWT(id, login, role, shopId);
             return res.json({ token });
         } catch (error) {
             return next(ApiError.internal('Ошибка при проверке токена: ' + error.message));
@@ -136,78 +145,81 @@ class EmployeeController {
     }
 
     // Удалить сотрудника
-   async Delet(req, res, next) {
-    try {
-        const { id } = req.params;
-        
-        // Сначала удаляем связи с администраторами
-        await Employee_in_administrator.destroy({ where: { employee_id: id } });
-        // Удаляем связи с магазинами
-        await Employee_in_shop.destroy({ where: { employee_id: id } });
-        
-        const employee = await Employee.findByPk(id);
-        if (!employee) {
-            return next(ApiError.badRequest('Сотрудник не найден'));
+    async Delet(req, res, next) {
+        try {
+            const { id } = req.params;
+            
+            // Сначала удаляем связи с администраторами
+            await Employee_in_administrator.destroy({ where: { employee_id: id } });
+            // Удаляем связи с магазинами
+            await Employee_in_shop.destroy({ where: { employee_id: id } });
+            
+            const employee = await Employee.findByPk(id);
+            if (!employee) {
+                return next(ApiError.badRequest('Сотрудник не найден'));
+            }
+            
+            await employee.destroy();
+            return res.json({ message: 'Сотрудник успешно удалён', id: Number(id) });
+        } catch (error) {
+            return next(ApiError.internal('Ошибка при удалении сотрудника: ' + error.message));
         }
-        
-        await employee.destroy();
-        return res.json({ message: 'Сотрудник успешно удалён', id: Number(id) });
-    } catch (error) {
-        return next(ApiError.internal('Ошибка при удалении сотрудника: ' + error.message));
     }
-}
-async Post(req, res, next) {
-    try {
-        const { employee_name, employee_surname, employee_fathername, employee_login, password } = req.body;
-        
-        if (!employee_login || !password || !employee_name || !employee_surname) {
-            return next(ApiError.badRequest("Все обязательные поля должны быть заполнены!"));
-        }
-        
-        const candidate = await Employee.findOne({ where: { employee_login } });
-        if (candidate) {
-            return next(ApiError.badRequest('Сотрудник с таким логином уже существует'));
-        }
-        
-        const hashPassword = await bcrypt.hash(password, 6);
-        const employee = await Employee.create({
-            employee_name,
-            employee_surname,
-            employee_fathername,
-            employee_login,
-            password: hashPassword,
-            role: 'seller'  // ← фиксированная роль
-        });
-        
-        const { password: _, ...employeeData } = employee.dataValues;
-        return res.status(201).json(employeeData);
-    } catch (error) {
-        return next(ApiError.internal('Ошибка при создании сотрудника: ' + error.message));
-    }
-}
-async resetPassword(req, res, next) {
-    try {
-        const { id } = req.params;
-        const { newPassword } = req.body;
-        
-        if (!newPassword || newPassword.length < 4) {
-            return next(ApiError.badRequest('Пароль должен быть не менее 4 символов'));
-        }
-        
-        const employee = await Employee.findByPk(id);
-        if (!employee) {
-            return next(ApiError.badRequest('Сотрудник не найден'));
-        }
-        
-        const hashPassword = await bcrypt.hash(newPassword, 6);
-        await employee.update({ password: hashPassword });
-        
-        return res.json({ message: 'Пароль успешно обновлён', employee_id: id });
-    } catch (error) {
-        return next(ApiError.internal('Ошибка при сбросе пароля: ' + error.message));
-    }
-}
 
+    // Создать сотрудника (администратором)
+    async Post(req, res, next) {
+        try {
+            const { employee_name, employee_surname, employee_fathername, employee_login, password } = req.body;
+            
+            if (!employee_login || !password || !employee_name || !employee_surname) {
+                return next(ApiError.badRequest("Все обязательные поля должны быть заполнены!"));
+            }
+            
+            const candidate = await Employee.findOne({ where: { employee_login } });
+            if (candidate) {
+                return next(ApiError.badRequest('Сотрудник с таким логином уже существует'));
+            }
+            
+            const hashPassword = await bcrypt.hash(password, 6);
+            const employee = await Employee.create({
+                employee_name,
+                employee_surname,
+                employee_fathername,
+                employee_login,
+                password: hashPassword,
+                role: 'seller'
+            });
+            
+            const { password: _, ...employeeData } = employee.dataValues;
+            return res.status(201).json(employeeData);
+        } catch (error) {
+            return next(ApiError.internal('Ошибка при создании сотрудника: ' + error.message));
+        }
+    }
+
+    // Сбросить пароль
+    async resetPassword(req, res, next) {
+        try {
+            const { id } = req.params;
+            const { newPassword } = req.body;
+            
+            if (!newPassword || newPassword.length < 4) {
+                return next(ApiError.badRequest('Пароль должен быть не менее 4 символов'));
+            }
+            
+            const employee = await Employee.findByPk(id);
+            if (!employee) {
+                return next(ApiError.badRequest('Сотрудник не найден'));
+            }
+            
+            const hashPassword = await bcrypt.hash(newPassword, 6);
+            await employee.update({ password: hashPassword });
+            
+            return res.json({ message: 'Пароль успешно обновлён', employee_id: id });
+        } catch (error) {
+            return next(ApiError.internal('Ошибка при сбросе пароля: ' + error.message));
+        }
+    }
 }
 
 module.exports = new EmployeeController();

@@ -9,7 +9,9 @@ import {
     EMPLOYEES_ROUTE, 
     SHOPS_ROUTE, 
     SUPPLIES_ROUTE,
-    CREATE_BOUQUET_ROUTE
+    CREATE_BOUQUET_ROUTE,
+    CREATE_ORDER,
+    EMP_ORDERS
 } from '../utils/consts';
 
 const Sidebar = () => {
@@ -60,7 +62,7 @@ const Sidebar = () => {
     const employeeMenu = [
         { 
             name: 'Заказы', 
-            path: '/employee/orders',
+            path: EMP_ORDERS,
             icon: '📋'
         },
         { 
@@ -79,14 +81,9 @@ const Sidebar = () => {
             icon: '📦'
         },
         { 
-            name: 'Мой магазин', 
-            path: '/employee/my-shop',
-            icon: '🏪'
-        },
-        { 
-            name: 'Продажи', 
-            path: '/employee/sales',
-            icon: '📊'
+            name: 'Создать заказ', 
+            path: CREATE_ORDER,
+            icon: '🛒'
         }
     ];
 
